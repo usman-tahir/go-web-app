@@ -1,25 +1,53 @@
 package main
 
 import (
+  "fmt"
   "net/http"
-  "github.com/russross/blackfriday"
+  "github.com/julienschmidt/httprouter"
 )
 
-/*
-  Generate the markdown that has been entered into the form. This markdown
-  should be generated into HTML, which is viewable once the user hits the
-  'Submit' button on the form
-*/
-func GenerateMarkdown(rw http.ResponseWriter, r *http.Request) {
-  markdown := blackfriday.MarkdownCommon([]byte (r.FormValue("body")))
-  rw.Write(markdown)
+func HomeHandler(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+  fmt.Println(rw, "Home\n")
+}
+
+func PostsIndexHandler(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+  fmt.Println(rw, "Posts Index\n")
+}
+
+func PostsCreateHandler(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+  fmt.Println("Posts Create\n")
+}
+
+func PostShowHandler(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+  id := p.ByName("id")
+  fmt.Fprintln(rw, "Showing post", id, "\n")
+}
+
+func PostUpdateHandler(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+  fmt.Fprintln(rw, "Post Update\n")
+}
+
+func PostDeleteHandler(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+  fmt.Fprintln(rw, "Post Delete\n")
+}
+
+func PostEditHandler(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+  fmt.Fprintln(rw, "Post Edit\n")
 }
 
 func main() {
-  // http.ListenAndServe(":8080", http.FileServer(http.Dir("./public")))
+  r := httprouter.New()
+  r.GET("/", HomeHandler)
 
-  // Serve the markdown route
-  http.HandleFunc("/markdown", GenerateMarkdown)
-  http.Handle("/", http.FileServer(http.Dir("public")))
-  http.ListenAndServe(":8080", nil)
+  // Posts collection
+  r.GET("/posts", PostsIndexHandler)
+  r.POST("/posts", PostsCreateHandler)
+
+  // Single post handling
+  r.GET("/posts/:id", PostShowHandler)
+  r.PUT("/posts/:id", PostUpdateHandler)
+  r.GET("/posts/:id/edit", PostEditHandler)
+
+  fmt.Println("Starting server on localhost:8080")
+  http.ListenAndServe(":8080", r)
 }
