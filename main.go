@@ -1,26 +1,28 @@
 package main
 
 import (
-  "encoding/json"
+  "html/template"
   "net/http"
+  "path"
 )
 
 type Book struct {
-  Title string `json:"title"`
-  Author string `json:"author"`
+  Title, Author string
 }
 
 func ShowBooks(w http.ResponseWriter, r * http.Request) {
   book := Book{"Building Web Apps with Go", "Jeremy Saenz"}
 
-  js, err := json.Marshal(book)
+  fp := path.Join("templates", "index.html")
+  tmpl, err := template.ParseFiles(fp)
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
 
-  w.Header().Set("Content-Type", "application/json")
-  w.Write(js)
+  if err := tmpl.Execute(w, book); err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+  }
 }
 
 func main() {
